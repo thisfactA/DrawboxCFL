@@ -1,0 +1,103 @@
+# Third-party dependencies
+
+Source uses MIT licensing; installed dependencies retain their own licenses. Install from the lockfile to receive their full license files. No dependency installation or node_modules is shipped in this independent ZIP. esbuild produces the Worker bundle from local project modules.
+
+- `@cloudflare/kv-asset-handler` 0.5.0: MIT OR Apache-2.0
+- `@cloudflare/unenv-preset` 2.16.2: MIT OR Apache-2.0
+- `@cloudflare/workerd-darwin-64` 1.20261012.1: Apache-2.0
+- `@cloudflare/workerd-darwin-arm64` 1.20261012.1: Apache-2.0
+- `@cloudflare/workerd-linux-64` 1.20261012.1: Apache-2.0
+- `@cloudflare/workerd-linux-arm64` 1.20261012.1: Apache-2.0
+- `@cloudflare/workerd-windows-64` 1.20261012.1: Apache-2.0
+- `@cspotcode/source-map-support` 0.8.1: MIT
+- `@emnapi/runtime` 1.11.3: MIT
+- `@esbuild/aix-ppc64` 0.28.2: MIT
+- `@esbuild/android-arm` 0.28.2: MIT
+- `@esbuild/android-arm64` 0.28.2: MIT
+- `@esbuild/android-x64` 0.28.2: MIT
+- `@esbuild/darwin-arm64` 0.28.2: MIT
+- `@esbuild/darwin-x64` 0.28.2: MIT
+- `@esbuild/freebsd-arm64` 0.28.2: MIT
+- `@esbuild/freebsd-x64` 0.28.2: MIT
+- `@esbuild/linux-arm` 0.28.2: MIT
+- `@esbuild/linux-arm64` 0.28.2: MIT
+- `@esbuild/linux-ia32` 0.28.2: MIT
+- `@esbuild/linux-loong64` 0.28.2: MIT
+- `@esbuild/linux-mips64el` 0.28.2: MIT
+- `@esbuild/linux-ppc64` 0.28.2: MIT
+- `@esbuild/linux-riscv64` 0.28.2: MIT
+- `@esbuild/linux-s390x` 0.28.2: MIT
+- `@esbuild/linux-x64` 0.28.2: MIT
+- `@esbuild/netbsd-arm64` 0.28.2: MIT
+- `@esbuild/netbsd-x64` 0.28.2: MIT
+- `@esbuild/openbsd-arm64` 0.28.2: MIT
+- `@esbuild/openbsd-x64` 0.28.2: MIT
+- `@esbuild/openharmony-arm64` 0.28.2: MIT
+- `@esbuild/sunos-x64` 0.28.2: MIT
+- `@esbuild/win32-arm64` 0.28.2: MIT
+- `@esbuild/win32-ia32` 0.28.2: MIT
+- `@esbuild/win32-x64` 0.28.2: MIT
+- `@img/colour` 1.1.0: MIT
+- `@img/sharp-darwin-arm64` 0.35.5: Apache-2.0
+- `@img/sharp-darwin-x64` 0.35.5: Apache-2.0
+- `@img/sharp-freebsd-wasm32` 0.35.5: Apache-2.0
+- `@img/sharp-libvips-darwin-arm64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-darwin-x64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linux-arm` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linux-arm64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linux-ppc64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linux-riscv64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linux-s390x` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linux-x64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linuxmusl-arm64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-libvips-linuxmusl-x64` 1.3.4: LGPL-3.0-or-later
+- `@img/sharp-linux-arm` 0.35.5: Apache-2.0
+- `@img/sharp-linux-arm64` 0.35.5: Apache-2.0
+- `@img/sharp-linux-ppc64` 0.35.5: Apache-2.0
+- `@img/sharp-linux-riscv64` 0.35.5: Apache-2.0
+- `@img/sharp-linux-s390x` 0.35.5: Apache-2.0
+- `@img/sharp-linux-x64` 0.35.5: Apache-2.0
+- `@img/sharp-linuxmusl-arm64` 0.35.5: Apache-2.0
+- `@img/sharp-linuxmusl-x64` 0.35.5: Apache-2.0
+- `@img/sharp-wasm32` 0.35.5: Apache-2.0 AND LGPL-3.0-or-later AND MIT
+- `@img/sharp-webcontainers-wasm32` 0.35.5: Apache-2.0
+- `@img/sharp-win32-arm64` 0.35.5: Apache-2.0 AND LGPL-3.0-or-later
+- `@img/sharp-win32-ia32` 0.35.5: Apache-2.0 AND LGPL-3.0-or-later
+- `@img/sharp-win32-x64` 0.35.5: Apache-2.0 AND LGPL-3.0-or-later
+- `@jridgewell/resolve-uri` 3.1.2: MIT
+- `@jridgewell/sourcemap-codec` 1.6.0: MIT
+- `@jridgewell/trace-mapping` 0.3.9: MIT
+- `@poppinss/colors` 4.1.6: MIT
+- `@poppinss/dumper` 0.6.5: MIT
+- `@poppinss/exception` 1.2.3: MIT
+- `@sindresorhus/is` 7.2.0: MIT
+- `@speed-highlight/core` 1.2.24: CC0-1.0
+- `@types/node` 26.6.5: MIT
+- `@types/whatwg-mimetype` 3.0.2: MIT
+- `@types/ws` 8.18.2: MIT
+- `blake3-wasm` 2.1.5: MIT
+- `buffer-image-size` 0.6.4: MIT
+- `cookie` 1.1.1: MIT
+- `detect-libc` 2.1.2: Apache-2.0
+- `entities` 7.0.1: BSD-2-Clause
+- `error-stack-parser-es` 1.0.5: MIT
+- `esbuild` 0.28.2: MIT
+- `fsevents` 2.3.3: MIT
+- `happy-dom` 20.14.6: MIT
+- `kleur` 4.1.5: MIT
+- `miniflare` 5.20261012.1-beta: MIT
+- `path-to-regexp` 6.3.0: MIT
+- `pathe` 2.0.3: MIT
+- `semver` 7.8.5: ISC
+- `sharp` 0.35.5: Apache-2.0
+- `supports-color` 10.2.2: MIT
+- `tslib` 2.8.1: 0BSD
+- `undici` 7.29.1: MIT
+- `undici-types` 8.9.0: MIT
+- `unenv` 2.0.0-rc.24: MIT
+- `whatwg-mimetype` 3.0.0: MIT
+- `workerd` 1.20261012.1: Apache-2.0
+- `wrangler` 4.151.1: MIT OR Apache-2.0
+- `ws` 8.21.0: MIT
+- `youch` 4.1.0-beta.10: MIT
+- `youch-core` 0.3.3: MIT

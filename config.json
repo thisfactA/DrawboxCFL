@@ -1,0 +1,6 @@
+{
+  "allowedOrigins": [
+    "https://example.invalid"
+  ],
+  "workerOrigin": "https://drawbox.example.invalid"
+}
