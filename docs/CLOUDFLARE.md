@@ -25,7 +25,11 @@ In the [Cloudflare dashboard](https://dash.cloudflare.com/), open **Storage & da
 2. Leave the default **Location** selected unless you need another region.
 3. Scroll down and click **Create**.
 
-Copy its **Database ID**, also called its **UUID**. If you already created this database with the README’s `wrangler d1 create` command, use that one instead of creating another.
+Open the database’s **Overview** tab. Its **Database ID**, also called its **UUID**, sits above the charts. Click the copy button beside it:
+
+![Copy the Database ID from the database Overview tab](images/cloudflare-database-id.jpg)
+
+The ID is hidden in this screenshot. Copy your own value for the next step. If you already created this database with the README’s `wrangler d1 create` command, use that one instead of creating another.
 
 ## 3. Connect the database and choose a Worker name
 
@@ -72,6 +76,12 @@ When deployment finishes, copy the Worker address it prints. It will look like:
 ```text
 https://canvas-drawbox.YOUR-SUBDOMAIN.workers.dev
 ```
+
+You can also find that address at the top of the Worker’s **Overview** tab. A deployed Worker appears under **Deployments → Active deployment** with traffic assigned to it:
+
+![Worker address location and active deployment with 100 percent traffic](images/cloudflare-deployment.jpg)
+
+These are cropped dashboard screenshots of an existing deployment, with its address and version hidden. The terminal output will look different. Use the address from your own deployment, not the placeholder above.
 
 This first deployment creates the service so you can finish its settings. The example origins are deliberately unconfigured at this point, so it is not ready for visitors yet.
 
@@ -150,9 +160,21 @@ The build creates `website-files/`:
 2. Open **embed.html** in a text editor and copy its contents.
 3. Paste that block into your website’s HTML where you want the drawing box, then upload the edited page.
 
+Place the block inside your page’s `<body>`, after the content you want above it and before `</body>`. Here is a basic placement example:
+
+![Paste the full generated embed block inside the HTML body](images/website-embed-placement.jpg)
+
+The highlighted part is the embed block. The screenshot uses a placeholder Worker address; paste the contents of your own generated `website-files/embed.html` instead of copying the image.
+
 Keep both the iframe and its script. The script gives the color picker and expanding message box enough room.
 
-Visit the page on your actual website and send a small drawing. Confirm it appears in the [private inbox](INBOX.md). If you want drawings by email too, follow the [Resend guide](EMAIL.md).
+Visit the page on your actual website and send a small drawing. Confirm it appears in the [private inbox](INBOX.md). A received drawing should appear with its optional message and a **Save PNG** button:
+
+![A received drawing and its message in the browser inbox](images/inbox-received-drawing.jpg)
+
+This screenshot uses a test drawing submitted to a local Worker and retrieved through the browser inbox. It contains no private visitor data. For your own setup, confirm that a drawing sent from your live website arrives here too.
+
+If you want drawings by email too, follow the [Resend guide](EMAIL.md).
 
 ## If something does not work
 
