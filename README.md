@@ -4,7 +4,7 @@ A drawing box for your website. Visitors can leave a drawing and a little messag
 
 This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the storage. It has a pen, eraser, fill tool, undo/redo and a custom color picker.
 
-![Drawbox with a sample drawing and optional message](docs/images/drawbox-desktop.jpg)
+<img src="docs/images/drawbox-desktop.jpg" alt="Drawbox with a sample drawing and optional message" width="500">
 
 <details><summary>Custom color picker</summary>
 
