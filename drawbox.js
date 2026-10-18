@@ -1,212 +1,61 @@
-/*
-        
-        FILL IN THESE VARIABLES BASED ON THE GUIDE AT https://github.com/vv0ltz/Drawbox
-        
-        IF YOU HAVE ANY QUESTION, SUGGESTIONS, OR NEED HELP, PLEASE OPEN AN ISSUE ON GITHUB PAGE OR COMMENT ON MY BLOG
-        
-				      /`·.¸
-				     /¸...¸`:·
-				 ¸.·´  ¸   `·.¸.·´)
-				: © ):´;      ¸  {
-				 `·.¸ `·  ¸.·´\`·¸)
-				     `\\´´\¸.·´
-        
-*/
-const GOOGLE_FORM_ID = "1FAIpQLScbzFT1pxeIkp5yNB3fB7VD9V89Jbitr4h30Q3jXYjy54SlMQ";
-const ENTRY_ID = "entry.251336726";
-const GOOGLE_SHEET_ID = "16jUCXXinqztl3sFftpWur9yFCAiASDsvmIsF3xHv-BU";
-const DISPLAY_IMAGES = true;
+(()=>{'use strict';if(window.top===window.self){document.body.replaceChildren();return}document.body.style.visibility='visible';const $=id=>document.getElementById(id),pad=$('pad'),ctx=pad.getContext('2d');let strokes=[],redo=[],active=null,color='#000000',size=3,erasing=false,filling=false,clearArmed=false,clearTimer=null,busy=false,pointerId=null,hover=null;const cursor=$('cursor').getContext('2d');let noticeTimer=null;function notice(text,temporary=false){clearTimeout(noticeTimer);$('status').textContent=text;$('status').classList.toggle('notice',!!text);if(temporary)noticeTimer=setTimeout(()=>{$('status').textContent='';$('status').classList.remove('notice')},4000)}const key='canvasstudio-drawing-draft-v1';
+function stamp(c,x,y,s){const n=Math.round(s.size),r=n/2,mid=n/2-.5,ox=x-Math.floor(n/2),oy=y-Math.floor(n/2);c.fillStyle=s.color;for(let dy=0;dy<n;dy++)for(let dx=0;dx<n;dx++)if((dx-mid)**2+(dy-mid)**2<=r*r+.1)c.fillRect(ox+dx,oy+dy,1,1)}
+function segment(c,a,b,s){let x=Math.round(a[0]*250),y=Math.round(a[1]*250);const tx=Math.round(b[0]*250),ty=Math.round(b[1]*250),dx=Math.abs(tx-x),sx=x<tx?1:-1,dy=-Math.abs(ty-y),sy=y<ty?1:-1;let error=dx+dy;while(true){stamp(c,x,y,s);if(x===tx&&y===ty)break;const twice=2*error;if(twice>=dy){error+=dy;x+=sx}if(twice<=dx){error+=dx;y+=sy}}}
+function flood(c,p,color){const image=c.getImageData(0,0,250,250),d=image.data,start=Math.min(249,Math.round(p[1]*250))*250+Math.min(249,Math.round(p[0]*250)),at=start*4,target=Array.from(d.slice(at,at+4)),replacement=[parseInt(color.slice(1,3),16),parseInt(color.slice(3,5),16),parseInt(color.slice(5,7),16),255];if(target.every((n,i)=>n===replacement[i]))return;const queue=new Int32Array(62500);let head=0,tail=0;function add(index){const o=index*4;if(target.some((n,i)=>d[o+i]!==n))return;for(let i=0;i<4;i++)d[o+i]=replacement[i];queue[tail++]=index}add(start);while(head<tail){const n=queue[head++],x=n%250;if(x>0)add(n-1);if(x<249)add(n+1);if(n>=250)add(n-250);if(n<62250)add(n+250)}c.putImageData(image,0,0)}
+function paint(canvas,list){const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;c.fillStyle='#fff';c.fillRect(0,0,canvas.width,canvas.height);for(const s of list){if(s.tool==='fill'){flood(c,s.points[0],s.color);continue}if(s.points.length===1)stamp(c,Math.round(s.points[0][0]*250),Math.round(s.points[0][1]*250),s);else for(let i=1;i<s.points.length;i++)segment(c,s.points[i-1],s.points[i],s)}}
 
-/*
-        
-        DONT EDIT BELOW THIS POINT IF YOU DONT KNOW WHAT YOU ARE DOING.
-        
-*/
+function redraw(){paint(pad,strokes);$('undo').disabled=busy||!strokes.length;$('redo').disabled=busy||!redo.length;$('clear').disabled=busy||!strokes.length}
+function save(){try{localStorage.setItem(key,JSON.stringify({strokes,message:$('message').value}))}catch{}}
+try{const draft=JSON.parse(localStorage.getItem(key)||'null');if(draft&&Array.isArray(draft.strokes)&&draft.strokes.length<=300){strokes=draft.strokes;if(typeof draft.message==='string')$('message').value=draft.message.slice(0,1000)}}catch{}
+function point(e){const r=pad.getBoundingClientRect();return [Math.max(0,Math.min(1,(e.clientX-r.left-1)/(r.width-2))),Math.max(0,Math.min(1,(e.clientY-r.top-1)/(r.height-2)))].map(n=>Math.min(249,Math.floor(n*250))/250)}
+function drawCursor(){cursor.clearRect(0,0,250,250);if(!hover||busy)return;if(filling){const x=Math.round(hover[0]*250),y=Math.round(hover[1]*250);cursor.fillStyle='#345579';cursor.fillRect(x-2,y,5,1);cursor.fillRect(x,y-2,1,5);return}const n=Math.round(size),radius=n/2,c=n/2-.5,ox=Math.round(hover[0]*250-Math.floor(n/2)),oy=Math.round(hover[1]*250-Math.floor(n/2));cursor.fillStyle=erasing?'rgba(210,55,55,.30)':'rgba(52,85,121,.28)';for(let y=0;y<n;y++)for(let x=0;x<n;x++)if((x-c)**2+(y-c)**2<=radius*radius+.1)cursor.fillRect(ox+x,oy+y,1,1)}
+function trackCursor(e){const r=pad.getBoundingClientRect();hover=e.pointerType==='touch'||e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom?null:point(e);drawCursor()}
+pad.onpointerenter=trackCursor;pad.onpointerleave=()=>{hover=null;drawCursor()};
 
-const CLIENT_ID = "b4fb95e0edc434c";
-const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/" + GOOGLE_SHEET_ID + "/export?format=csv";
-const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/" + GOOGLE_FORM_ID + "/formResponse";
+pad.onpointerdown=e=>{if(busy||active||e.button!==0||strokes.length>=300)return;e.preventDefault();resetClear();pointerId=e.pointerId;trackCursor(e);active={color:erasing?'#ffffff':color,size,points:[point(e)],...(filling?{tool:'fill'}:{})};strokes.push(active);redo=[];pad.setPointerCapture(e.pointerId);redraw()};pad.onpointermove=e=>{trackCursor(e);if(!active||active.tool==='fill'||e.pointerId!==pointerId)return;e.preventDefault();if(active.points.length>=2000)return;const p=point(e),last=active.points.at(-1);if(Math.hypot(p[0]-last[0],p[1]-last[1])<.001)return;active.points.push(p);segment(ctx,last,p,active)};function finish(event){if(event?.pointerId!==undefined&&event.pointerId!==pointerId)return;if(active){active=null;pointerId=null;save();redraw()}}pad.onpointerup=finish;pad.onpointercancel=finish;pad.onlostpointercapture=finish;
+$('undo').onclick=()=>{resetClear();finish();if(strokes.length)redo.push(strokes.pop());redraw();save()};$('redo').onclick=()=>{resetClear();if(redo.length)strokes.push(redo.pop());redraw();save()};function resetClear(){clearArmed=false;clearTimeout(clearTimer);$('clear').removeAttribute('data-confirm');$('clear').title='Clear';$('clear').setAttribute('aria-label','Clear')}
+$('clear').onclick=()=>{if(busy||!strokes.length)return;finish();if(!clearArmed){clearArmed=true;$('clear').setAttribute('data-confirm','');$('clear').title='Click again to clear';$('clear').setAttribute('aria-label','Confirm clear');clearTimer=setTimeout(resetClear,3000);return}resetClear();strokes=[];redo=[];redraw();save()};
+function syncTools(){$('brush').setAttribute('aria-pressed',!erasing&&!filling);$('erase').setAttribute('aria-pressed',erasing);$('fill').setAttribute('aria-pressed',filling)}$('brush').onclick=()=>{resetClear();erasing=false;filling=false;syncTools();drawCursor()};$('erase').onclick=()=>{resetClear();erasing=!erasing;filling=false;syncTools();drawCursor()};$('fill').onclick=()=>{resetClear();filling=!filling;erasing=false;syncTools();drawCursor()};function setSize(value){size=Math.max(1,Math.min(30,Math.round(value)));$('size').value=size;$('size-value').value=size;drawCursor()}$('size').oninput=e=>setSize(Number(e.target.value));$('color').oninput=e=>choose(e.target.value);function choose(c){color=c;erasing=false;syncTools();$('color').value=c;$('color').style.backgroundColor=c;syncPicker(c);document.querySelectorAll('.swatch').forEach(b=>b.setAttribute('aria-pressed',b.dataset.color===c));drawCursor()}
 
-let canvas = document.getElementById("drawboxcanvas");
-let context = canvas.getContext("2d");
-context.fillStyle = "white";
-context.fillRect(0, 0, canvas.width, canvas.height);
+let pickerHue=0;
+function syncPicker(c){const rgb=[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)/255),max=Math.max(...rgb),min=Math.min(...rgb),d=max-min;let h=pickerHue;if(d){h=(max===rgb[0]?(rgb[1]-rgb[2])/d+(rgb[1]<rgb[2]?6:0):max===rgb[1]?(rgb[2]-rgb[0])/d+2:(rgb[0]-rgb[1])/d+4)*60;pickerHue=h} $('hue').value=Math.round(h);$('saturation').value=Math.round(max?d/max*100:0);$('brightness').value=Math.round(max*100);$('hex').value=c;$('hex').removeAttribute('aria-invalid');$('saturation').style.background='linear-gradient(to right,#888,hsl('+h+' 100% 50%))';$('brightness').style.background='linear-gradient(to right,#000,hsl('+h+' 100% 50%))'}
+function pickerChange(){const h=Number($('hue').value),s=Number($('saturation').value)/100,v=Number($('brightness').value)/100;pickerHue=h;const f=n=>{const k=(n+h/60)%6;return Math.round((v-v*s*Math.max(0,Math.min(k,4-k,1)))*255).toString(16).padStart(2,'0')};choose('#'+f(5)+f(3)+f(1));$('hue').value=h;$('saturation').value=Math.round(s*100);$('brightness').value=Math.round(v*100)}
+for(const id of ['hue','saturation','brightness'])$(id).oninput=pickerChange;
+function closePicker(focus=false){$('color-popup').hidden=true;$('color').setAttribute('aria-expanded','false');if(focus)$('color').focus()}
+$('color').onclick=()=>{const open=$('color-popup').hidden;$('color-popup').hidden=!open;$('color').setAttribute('aria-expanded',String(open));if(open){syncPicker(color);$('hue').focus()}};
+$('hex').oninput=()=>{let value=$('hex').value.trim();if(!value.startsWith('#'))value='#'+value;if(/^#[0-9a-f]{6}$/i.test(value)){choose(value.toLowerCase())}else $('hex').setAttribute('aria-invalid','true')};
+$('hex').onkeydown=e=>{if(e.key==='Enter'){if($('hex').getAttribute('aria-invalid')!=='true')closePicker(true)}};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.custom-color'))closePicker()});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('color-popup').hidden){e.preventDefault();closePicker(true)}});
 
-
-
-function setCanvasSize () {
-   canvas.width = canvas.offsetWidth;
-   canvas.height = canvas.offsetWidth;
-   context.fillStyle = "white";
-   context.fillRect(0, 0, canvas.width, canvas.height);
+for(const c of ['#000000','#777777','#bbbbbb','#ffffff','#ce4848','#e17a35','#e7b641','#f0db77','#345579','#3478c6','#39a6c4','#428d60','#8361b5','#c264a0','#945356','#896548']){const b=document.createElement('button');b.className='swatch';b.style.setProperty('--c',c);b.dataset.color=c;b.setAttribute('aria-label',c);b.onclick=()=>choose(c);$('colors').append(b)}choose(color);redraw();
+$('message').oninput=save;
+$('send').onclick=async()=>{finish();if(busy||!strokes.length)return;busy=true;$('send').disabled=true;$('message').disabled=true;closePicker();redraw();notice('');$('sent').textContent='Sending…';$('sent').hidden=false;drawCursor();try{const response=await fetch('/api/drawings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({strokes,message:$('message').value,website:$('website').value})});const result=await response.json();if(!response.ok){const error=Error(result.error||'Submission failed.');error.status=response.status;throw error}notice('');$('sent').textContent='Sent';$('sent').hidden=false;drawCursor();await new Promise(resolve=>setTimeout(resolve,1400));$('sent').hidden=true;strokes=[];redo=[];$('message').value='';save()}catch(error){notice(error.status===429?'Please wait before sending again.':error.message+' Your drawing is still here.',error.status===429)}finally{$('sent').hidden=true;busy=false;$('send').disabled=false;$('message').disabled=false;redraw()}};
+// Reserve the host viewport before painting a larger field. Native textarea resizing
+// paints before its asynchronous ResizeObserver message can reach the parent.
+let messageResize=null;
+function reportSize(){if(window.parent!==window)window.parent.postMessage({type:'canvasstudio-drawbox-size',height:messageResize?1200:Math.ceil(document.body.getBoundingClientRect().height)},'*')}
+function applyMessageResize(){
+ if(!messageResize)return;
+ const current=$('message').getBoundingClientRect().height;
+ const needed=document.body.getBoundingClientRect().height+messageResize.wanted-current;
+ if(window.parent===window||needed<=window.innerHeight){
+  $('message').style.height=messageResize.wanted+'px';
+  if(!messageResize.dragging)messageResize=null;
+ }
+ reportSize();
 }
-
-window.addEventListener('resize', setCanvasSize);
-
-setCanvasSize();
-
-let restore_array = [];
-let start_index = -1;
-let stroke_color = "black";
-let stroke_width = "2";
-let is_drawing = false;
-
-function change_color(element) {
-  stroke_color = element.style.background;
-}
-
-function start(event) {
-  is_drawing = true;
-  context.beginPath();
-  context.moveTo(getX(event), getY(event));
-  event.preventDefault();
-}
-
-function draw(event) {
-  if (!is_drawing) return;
-  context.lineTo(getX(event), getY(event));
-  context.strokeStyle = stroke_color;
-  context.lineWidth = stroke_width;
-  context.lineCap = "round";
-  context.lineJoin = "round";
-  context.stroke();
-  event.preventDefault();
-}
-
-function stop(event) {
-  if (!is_drawing) return;
-  context.stroke();
-  context.closePath();
-  is_drawing = false;
-  restore_array.push(context.getImageData(0, 0, canvas.width, canvas.height));
-  start_index++;
-  event.preventDefault();
-}
-
-function getX(event) {
-  return event.pageX
-    ? event.pageX - canvas.offsetLeft
-    : event.targetTouches[0].pageX - canvas.offsetLeft;
-}
-
-function getY(event) {
-  return event.pageY
-    ? event.pageY - canvas.offsetTop
-    : event.targetTouches[0].pageY - canvas.offsetTop;
-}
-
-canvas.addEventListener("touchstart", start, false);
-canvas.addEventListener("touchmove", draw, false);
-canvas.addEventListener("touchend", stop, false);
-canvas.addEventListener("mousedown", start, false);
-canvas.addEventListener("mousemove", draw, false);
-canvas.addEventListener("mouseup", stop, false);
-canvas.addEventListener("mouseout", stop, false);
-
-function Restore() {
-  if (start_index <= 0) {
-    Clear();
-  } else {
-    start_index--;
-    restore_array.pop();
-    context.putImageData(restore_array[start_index], 0, 0);
-  }
-}
-
-function Clear() {
-  context.fillStyle = "white";
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  restore_array = [];
-  start_index = -1;
-}
-
-context.drawImage = function() {
-	console.warn("noo >:(");
+const messageHandle=$('message-resize');
+messageHandle.onpointerdown=e=>{
+ if($('message').disabled||e.button!==0)return;
+ e.preventDefault();$('message').focus();
+ const height=$('message').getBoundingClientRect().height;
+ messageResize={startY:e.clientY,startHeight:height,wanted:height,dragging:true};
+ messageHandle.setPointerCapture(e.pointerId);reportSize();
 };
-
-document.getElementById("submit").addEventListener("click", async function () {
-  const submitButton = document.getElementById("submit");
-  const statusText = document.getElementById("status");
-
-  submitButton.disabled = true;
-  statusText.textContent = "Uploading...";
-
-
-  const imageData = canvas.toDataURL("image/png");
-  const blob = await (await fetch(imageData)).blob();
-  const formData = new FormData();
-  formData.append("image", blob, "drawing.png");
-
-  try {
-    const response = await fetch("https://api.imgur.com/3/image", {
-      method: "POST",
-      headers: { Authorization: `Client-ID ${CLIENT_ID}` },
-      body: formData,
-    });
-
-    const data = await response.json();
-    if (!data.success) throw new Error("Imgur upload failed");
-
-    const imageUrl = data.data.link;
-    console.log("Uploaded image URL:", imageUrl);
-
-    const googleFormData = new FormData();
-    googleFormData.append(ENTRY_ID, imageUrl);
-
-    await fetch(GOOGLE_FORM_URL, {
-      method: "POST",
-      body: googleFormData,
-      mode: "no-cors",
-    });
-
-    statusText.textContent = "Upload successful!";
-    alert("Image uploaded and submitted successfully ☻");
-    location.reload();
-  } catch (error) {
-    console.error(error);
-    statusText.textContent = "Error uploading image.";
-    alert("Error uploading image or submitting to Google Form.");
-  } finally {
-    submitButton.disabled = false;
-  }
-});
-
-async function fetchImages() {
-  if (!DISPLAY_IMAGES) {
-    console.log("Image display is disabled.");
-    return;
-  }
-
-  try {
-    const response = await fetch(GOOGLE_SHEET_URL);
-    const csvText = await response.text();
-    const rows = csvText.split("\n").slice(1);
-
-    const gallery = document.getElementById("gallery");
-    gallery.innerHTML = "";
-    rows.reverse().forEach((row) => {
-      const columns = row.split(",");
-      if (columns.length < 2) return;
-
-      const timestamp = columns[0].trim();
-      const imgUrl = columns[1].trim().replace(/"/g, "");
-
-      if (imgUrl.startsWith("http")) {
-        const div = document.createElement("div");
-        div.classList.add("image-container");
-
-        div.innerHTML = `
-                    <img src="${imgUrl}" alt="drawing">
-                    <p>${timestamp}</p>
-                `;
-        gallery.appendChild(div);
-      }
-    });
-  } catch (error) {
-    console.error("Error fetching images:", error);
-    document.getElementById("gallery").textContent = "Failed to load images.";
-  }
-}
-
-fetchImages();
+messageHandle.onpointermove=e=>{if(!messageResize?.dragging)return;messageResize.wanted=Math.max(64,Math.min(600,messageResize.startHeight+e.clientY-messageResize.startY));applyMessageResize()};
+function endMessageResize(){if(messageResize){messageResize.dragging=false;applyMessageResize()}}
+messageHandle.onpointerup=endMessageResize;messageHandle.onpointercancel=endMessageResize;messageHandle.onlostpointercapture=endMessageResize;
+messageHandle.onkeydown=e=>{if(!['ArrowUp','ArrowDown','Home','End'].includes(e.key)||$('message').disabled)return;e.preventDefault();const height=$('message').getBoundingClientRect().height;messageResize={wanted:e.key==='Home'?64:e.key==='End'?600:Math.max(64,Math.min(600,height+(e.key==='ArrowDown'?16:-16))),dragging:false};applyMessageResize()};
+window.addEventListener('resize',applyMessageResize);
+new window.ResizeObserver(reportSize).observe(document.body);window.addEventListener('message',event=>{if(event.source===window.parent&&event.data?.type==='canvasstudio-drawbox-measure')reportSize()});window.requestAnimationFrame(reportSize);
+window.addEventListener('blur',()=>{messageResize=null;reportSize();resetClear();finish();hover=null;drawCursor()});window.addEventListener('pagehide',save);})();

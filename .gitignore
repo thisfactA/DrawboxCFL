@@ -1,0 +1,14 @@
+node_modules/
+.wrangler/
+.dev.vars*
+.env*
+**/.configured.json
+__pycache__/
+*.pyc
+inbox-key
+*.zip
+backend/widget.html
+backend/settings.mjs
+backend/deploy.js
+backend/config.json
+website-files/

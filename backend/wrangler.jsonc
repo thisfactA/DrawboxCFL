@@ -1,0 +1,22 @@
+{
+  "name": "canvas-drawbox",
+  "main": "deploy.js",
+  "compatibility_date": "2026-10-16",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "canvas-drawings",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "*/5 * * * *"
+    ]
+  },
+  "vars": {
+    "MAIL_TO": "",
+    "MAIL_FROM": "drawing <onboarding@resend.dev>"
+  }
+}

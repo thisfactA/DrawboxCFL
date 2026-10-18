@@ -1,72 +1,71 @@
-# Introduction
+# DrawBoxCFL
 
-This is a fork of a drawbox for static sites made by [drawbox.nekoweb.org (archive)](https://web.archive.org/web/20250311101048/https://drawbox.nekoweb.org/)
+A drawing box for your website. Visitors can leave a drawing and a little message, and you can receive both privately through Cloudflare (or by email if you want).
 
-It relies on **Google Forms/Sheets and Imgur** as a backend and was designed with **Neocities** and **Nekoweb** users in mind
+This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the storage. It has a pen, eraser, fill tool, undo/redo and a custom color picker. No desktop app needed.
 
-I decided to publish it because:
-- I made it mobile responsive
-- Included basic cooldown funcition that makes user have to wait a minute before submitting an image
-- It got deleted by the author and I want to preserve it
+![Drawbox with a sample drawing and optional message](docs/images/drawbox-desktop.jpg)
 
-If you use **Neocities**, it will **NOT** work for new free tier accounts (old ones are fine) due to the [Content Security Policy](https://content-security-policy.neocities.org/). **Nekoweb** users should be fine
+<details><summary>Custom color picker</summary>
 
-## A live example is found [here](https://vv0ltz.neocities.org/draw) and on [archive](https://web.archive.org/web/20260815002812/https://vv0ltz.neocities.org/draw)
+![Hue, saturation, brightness and hex controls](docs/images/color-picker.jpg)
 
-![image](Screenshot.png)
+</details>
 
----
+## Setup
 
-# Current Problems and Moderation
+You’ll need Node.js 22.13+, a Cloudflare account, and access to edit your website. There’s a bit of setup the first time, but after that you mostly just edit the three Drawbox files.
 
-Current project is simple and free, however, *it exposes your forms and sheet IDs*. The sheet is unaffected since it's view only, but as long as your forms are open - anyone can submit whatever through the forms itself, so improvements are appreciated.
+1. Install dependencies and create a database:
 
-**Moderation:**
+   ```sh
+   npm ci
+   npx wrangler login
+   npx wrangler d1 create canvas-drawings
+   ```
 
-- To delete a drawing - go to the drawbox sheet and delete a row with a corresponding imgur link
-- To close the uploads to the gallery - close the drawbox form 
+2. Edit two files:
 
----
+   - `config.json`: set `allowedOrigins` to your exact website origin, such as `https://your-site.example`. Set `workerOrigin` to your planned Worker address. Use no trailing slashes or page paths.
+   - `backend/wrangler.jsonc`: choose your Worker name and replace the D1 database ID. Keep the `DB` binding. Use the database name you created above.
 
-# How To Set Up
+3. Initialize D1, add a private inbox key, and deploy:
 
-You need a Google account and these files from this repo:
+   ```sh
+   npx wrangler d1 execute canvas-drawings --remote --file backend/schema.sql --config backend/wrangler.jsonc
+   npx wrangler secret put INBOX_TOKEN --config backend/wrangler.jsonc
+   npm run deploy
+   ```
 
-- **drawbox.html** - this is where the actual drawbox itself is.
-- **drawbox.js** - this is the code that saves the image
-- **drawbox.css** - makes the site itself prettier, feel free to change
+   Create a long random INBOX_TOKEN in a password manager and save it privately. Never put it in your public website. Adjust the database name in the command if you renamed it.
 
-In the `drawbox.js` file you need to provide 4 variables.
+4. Upload `website-files/drawbox-embed.mjs` to your website root. Copy the contents of `website-files/embed.html` into your page where you want the drawing box.
 
-Create a google forms. You can call it whatever you like. Add a "short answer" question. I called mine "imgur link". Press the 3 dots up next to your pfp. press "pre-fill form". It will open a new tab in which your blank google form will be presented to you. Input something into the form and tap "get link". Copy the link and open it up in a notes app, here's an example:
+The build creates website-files/. Keep the sizing script with the iframe so expanding messages and the color picker fit. Direct visits to the Worker are intentionally blank. Test on your configured website. Hosting policies must permit the Worker iframe and your local module.
 
-`https://docs.google.com/forms/d/e/1FAIpQLScbzFT1pxeIkp5yNB3fB7VD9V89Jbitr4h30Q3jXYjy54SlMQ/viewform?usp=pp_url&entry.251336726=imgur`
+## Make it your own
 
-You then want to go back to the edit page of your form and click "responses". Click "link to sheets" and create a sheet.
+| File | Purpose |
+| --- | --- |
+| drawbox.html | Canvas, controls and SVG icons |
+| drawbox.css | Colors, spacing and responsive layout |
+| drawbox.js | Drawing, picker, message and send behavior |
+| config.json | Website and Worker origins |
+| backend/ | Worker, database, email and tests |
 
-## GOOGLE_FORM_ID
+After editing, run `npm test`, then `npm run deploy`. Existing Google Forms/Imgur drawings are not imported automatically. Email stays off until you set it up.
 
-The long string of text is your google form URL. From the example above, it's this one:
+## Optional features
 
-`1FAIpQLScbzFT1pxeIkp5yNB3fB7VD9V89Jbitr4h30Q3jXYjy54SlMQ`
+- [Email drawings to yourself](docs/EMAIL.md)
+- [Read and save drawings in your browser](docs/INBOX.md)
+- [Backend API and limits](docs/API.md)
+- [Security and maintenance](docs/SECURITY.md)
 
-## ENTRY_ID
+The browser inbox is read/save only. Trusted API clients can Trash, restore and permanently delete items already in Trash. Trash expires after seven days. Keep the five-minute scheduled trigger for cleanup and mail retries. Storage and request limits apply; review your provider's account quotas before public use.
 
-Your entry id will be formatted along the lines of this; from the example above it's: 
+## Development
 
-`entry.251336726`
+`npm run build` generates the Worker and embed files. `npm test` runs local regression tests. `npm run dev` starts a local Worker; see [local preview](docs/DEVELOPMENT.md). Deployment and email need your own account settings.
 
-## GOOGLE_SHEET_ID
-
-Navigate to your responses on your google form and press "view in sheets". once on your sheet, press "share" and change General access to "anyone with link", and copy you should get something similar to the below:
-
-`https://docs.google.com/spreadsheets/d/16jUCXXinqztl3sFftpWur9yFCAiASDsvmIsF3xHv-BU/edit?usp=sharing`
-
-copy your ID (in this case `16jUCXXinqztl3sFftpWur9yFCAiASDsvmIsF3xHv-BU`) and paste it into the GOOGLE_SHEET_ID variable
-
-## DISPLAY_IMAGES
-
-Simply set this to true or false depending if you wish to display your images on your page or not.
-
-Thats it! if youve set up everything correctly, it should work. 
-
+Inspired by [vv0ltz/Drawbox](https://github.com/vv0ltz/Drawbox) and the original drawbox.nekoweb.org project. This version replaces the original frontend and backend with the Cloudflare implementation. Source is MIT licensed; dependencies keep their own licenses. See LICENSE and THIRD_PARTY_NOTICES.md.
