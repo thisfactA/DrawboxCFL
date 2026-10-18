@@ -75,4 +75,4 @@ The browser inbox lets you view drawings and save PNGs. Moving drawings to Trash
 
 `npm run build` generates the Worker and embed files. `npm test` runs local regression tests. `npm run dev` starts a local Worker; see [local preview](docs/DEVELOPMENT.md). Deployment and email need your own account settings.
 
-Inspired by [vv0ltz/Drawbox](https://github.com/vv0ltz/Drawbox) and the original drawbox.nekoweb.org project. This version replaces the original frontend and backend with the Cloudflare implementation. Source is MIT licensed; dependencies keep their own licenses. See LICENSE and THIRD_PARTY_NOTICES.md.
+Inspired by [vv0ltz/Drawbox](https://github.com/vv0ltz/Drawbox) and the original drawbox.nekoweb.org project. This version replaces the original frontend and backend with the Cloudflare implementation. Source is MIT licensed; dependencies keep their own licenses. See [LICENSE](LICENSE) and [third-party notices](docs/THIRD_PARTY_NOTICES.md).
