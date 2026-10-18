@@ -11,9 +11,12 @@ await fs.writeFile(path.join(backend,'widget.html'),html);
 await fs.copyFile(path.join(root,'config.json'),path.join(backend,'config.json'));
 execFileSync(process.execPath,['build.mjs'],{cwd:backend,stdio:'inherit'});
 const output=path.join(root,'website-files');await fs.mkdir(output,{recursive:true});
-await fs.copyFile(path.join(backend,'embed-frame.mjs'),path.join(output,'drawbox-embed.mjs'));
+
 const {workerOrigin}=JSON.parse(await read('config.json'));
+await fs.writeFile(path.join(output,'drawbox-embed.mjs'),(await fs.readFile(path.join(backend,'embed-frame.mjs'),'utf8')).replaceAll('https://drawbox.example.invalid',workerOrigin));
 await fs.writeFile(path.join(output,'embed.html'),`<!-- Upload drawbox-embed.mjs to your website root and paste this block into your page. -->\n<style>.main-drawbox{width:480px;max-width:100%}.main-drawbox iframe{display:block;width:100%;height:510px;border:0}</style>\n<aside class="main-drawbox"><iframe src="${workerOrigin}/" title="Draw me something" loading="lazy" referrerpolicy="no-referrer"></iframe></aside>\n<script type="module">import {installDrawboxResizing} from '/drawbox-embed.mjs';installDrawboxResizing(window);</script>\n`);
+const embed=await fs.readFile(path.join(output,'embed.html'),'utf8');
+await fs.writeFile(path.join(output,'example.html'),'<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DrawBoxCFL website example</title><style>body{margin:24px}</style>'+embed+'</html>');
 console.log('Website files ready in website-files/.');
 
 await buildPreview();

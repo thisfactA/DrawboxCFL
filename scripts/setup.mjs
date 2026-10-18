@@ -15,7 +15,7 @@ export function httpsOrigin(value) {
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.pathname !== '/') {
     throw Error('Use an HTTPS website address without a page path, query, or login details.');
   }
-  if (url.hostname.endsWith('.invalid') || url.hostname.endsWith('.example') || /YOUR-|SUBDOMAIN/i.test(value)) {
+  if (url.hostname.endsWith('.invalid') || url.hostname.endsWith('.example') || /YOUR-SUBDOMAIN|YOUR-WORKER/i.test(value)) {
     throw Error('Enter your own address, rather than the example address.');
   }
   return url.origin;
