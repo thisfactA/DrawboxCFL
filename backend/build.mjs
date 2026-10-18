@@ -10,4 +10,4 @@ for(const file of ['embed-frame.mjs','viewer.py'])await fs.writeFile(path.join(r
 await replaceOrigin(path.join(root,'examples'));await replaceOrigin(path.join(root,'tests'));
 await fs.writeFile(path.join(root,'.configured.json'),JSON.stringify({workerOrigin:config.workerOrigin})+'\n');
 await fs.writeFile(path.join(root,'settings.mjs'),'export const allowedOrigins = '+JSON.stringify(config.allowedOrigins)+';\n');
-await build({entryPoints:[path.join(root,'worker.mjs')],bundle:true,format:'esm',platform:'browser',target:'es2022',loader:{'.html':'text'},outfile:path.join(root,'deploy.js')});console.log('Built Drawbox with configured origin allowlist');
+await build({stdin:{contents:"export {default} from './worker.mjs';",resolveDir:root,sourcefile:'worker-entry.mjs'},bundle:true,format:'esm',platform:'browser',target:'es2022',loader:{'.html':'text'},outfile:path.join(root,'deploy.js')});console.log('Built Drawbox with configured origin allowlist');
