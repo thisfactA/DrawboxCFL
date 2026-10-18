@@ -1,6 +1,6 @@
 # Agent quick start
 
-Read README.md. Run `npm ci` and `npm test`. No desktop application is involved.
+Read README.md. Run `npm ci` and `npm test`.
 
 Edit drawbox.html for markup/icons, drawbox.css for appearance, drawbox.js for interactions, and config.json for origins. Backend code and tests live in backend/. `npm run build` assembles the widget, bundles the Worker and generates website-files/. Never edit backend/widget.html, backend/settings.mjs or backend/deploy.js directly.
 

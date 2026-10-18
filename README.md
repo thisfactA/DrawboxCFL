@@ -2,7 +2,7 @@
 
 A drawing box for your website. Visitors can leave a drawing and a little message, and you can receive both privately through Cloudflare (or by email if you want).
 
-This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the storage. It has a pen, eraser, fill tool, undo/redo and a custom color picker. No desktop app needed.
+This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the storage. It has a pen, eraser, fill tool, undo/redo and a custom color picker.
 
 ![Drawbox with a sample drawing and optional message](docs/images/drawbox-desktop.jpg)
 
@@ -15,6 +15,8 @@ This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the
 ## Setup
 
 You’ll need Node.js 22.13+, a Cloudflare account, and access to edit your website. There’s a bit of setup the first time, but after that you mostly just edit the three Drawbox files.
+
+For a walkthrough with screenshots, see [Cloudflare setup](docs/CLOUDFLARE.md).
 
 1. Install dependencies and create a database:
 
@@ -41,7 +43,7 @@ You’ll need Node.js 22.13+, a Cloudflare account, and access to edit your webs
 
 4. Upload `website-files/drawbox-embed.mjs` to your website root. Copy the contents of `website-files/embed.html` into your page where you want the drawing box.
 
-The build creates website-files/. Keep the sizing script with the iframe so expanding messages and the color picker fit. Direct visits to the Worker are intentionally blank. Test on your configured website. Hosting policies must permit the Worker iframe and your local module.
+The build creates the `website-files/` folder. Keep the sizing script with the iframe so the message box and color picker have room to open. The Worker address is intentionally blank when visited on its own, so test DrawBoxCFL on your website. Your host must allow the Worker iframe and the script.
 
 ## Make it your own
 
@@ -62,7 +64,7 @@ After editing, run `npm test`, then `npm run deploy`. Existing Google Forms/Imgu
 - [Backend API and limits](docs/API.md)
 - [Security and maintenance](docs/SECURITY.md)
 
-The browser inbox is read/save only. Trusted API clients can Trash, restore and permanently delete items already in Trash. Trash expires after seven days. Keep the five-minute scheduled trigger for cleanup and mail retries. Storage and request limits apply; review your provider's account quotas before public use.
+The browser inbox lets you view drawings and save PNGs. Moving drawings to Trash or restoring them needs a private API client. Items in Trash are permanently removed after seven days. Keep the scheduled cleanup enabled, and check your Cloudflare and email limits before sharing the box widely.
 
 ## Development
 
