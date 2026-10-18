@@ -12,6 +12,10 @@ This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the
 
 </details>
 
+## Live example
+
+Try DrawBoxCFL on [my main website](https://thisfact.neocities.org/). The drawing box is below the about me text.
+
 ## Setup
 
 You’ll need Node.js 22.13+, a Cloudflare account, and access to edit your website. There’s a bit of setup the first time, but after that you mostly just edit the three Drawbox files.
