@@ -1,37 +1,85 @@
 # Connect DrawBoxCFL to Cloudflare
 
-Cloudflare stores the drawings and runs the small service that receives them. You only need to do this setup once. After that, changes to the drawing box can be uploaded with `npm run deploy`.
+Cloudflare runs the Worker that receives drawings and the D1 database that stores them. The Worker is the small backend service; D1 is its storage. You’ll create both here, then connect the drawing box to your website.
 
-The screenshots show the real dashboard, cropped to the fields you need. The names are examples, and no account details or keys are included. Cloudflare may move things around over time, but the settings below are the ones that matter.
+The screenshots show real setup screens, cropped to the relevant fields. Names are examples, and no account details or keys are shown.
 
-## 1. Get the project ready
+## 1. Install the project tools
 
-Download the project ZIP from GitHub and unzip it, or clone the repository. Install Node.js 22.13 or newer, then open a terminal in the project folder and run:
+Download and unzip the project, then open a terminal in its folder. You’ll need Node.js 22.13 or newer.
 
 ```sh
 npm ci
 npx wrangler login
 ```
 
-Wrangler is Cloudflare’s command-line tool. The second command opens a browser so you can sign in to your own Cloudflare account. Come back to the terminal when it finishes.
+Wrangler is Cloudflare’s command-line tool. The login command opens a browser so you can sign in to your own Cloudflare account. Return to the terminal when it finishes.
 
-## 2. Create a database
+## 2. Create the D1 database
 
-In the [Cloudflare dashboard](https://dash.cloudflare.com/), open **Storage & databases → D1 SQLite Database → Create Database**. If your sidebar looks different, use the dashboard search to find D1.
+In the [Cloudflare dashboard](https://dash.cloudflare.com/), open **Storage & databases → D1 SQLite Database → Create Database**. You can also find D1 through the dashboard search.
 
 ![Name the database and leave the default location selected](images/cloudflare-d1.jpg)
 
 1. Name it **canvas-drawings**.
-2. Leave the default **Location** selected unless you have a reason to choose another region.
+2. Leave the default **Location** selected unless you need another region.
 3. Scroll down and click **Create**.
 
-Copy the new database’s **Database ID** or **UUID**. Open `backend/wrangler.jsonc` in a text editor and replace `REPLACE_WITH_YOUR_D1_DATABASE_ID` with that ID. Keep the quotes around it. Leave the binding name as **DB** and the database name as **canvas-drawings**.
+Copy its **Database ID**, also called its **UUID**. If you already created this database with the README’s `wrangler d1 create` command, use that one instead of creating another.
 
-Already created it with `npx wrangler d1 create canvas-drawings` from the README? Use that database instead. You do not need a second one.
+## 3. Connect the database and choose a Worker name
 
-## 3. Set your website and Worker addresses
+Open `backend/wrangler.jsonc` in a text editor. These are the fields to change:
 
-Open `config.json`. Replace the example addresses with your own:
+```json
+"name": "canvas-drawbox",
+"d1_databases": [
+  {
+    "binding": "DB",
+    "database_name": "canvas-drawings",
+    "database_id": "PASTE_YOUR_DATABASE_ID_HERE"
+  }
+]
+```
+
+This is an excerpt, not a replacement for the whole file. Keep the other settings already there.
+
+- **name** is the Worker’s name. Keeping `canvas-drawbox` is fine.
+- **database_name** must match the database you created.
+- **database_id** is the ID you just copied. Keep the quotes around it.
+- **binding** must stay **DB**. That is how the code finds the database.
+
+Add the tables to your new database:
+
+```sh
+npx wrangler d1 execute canvas-drawings --remote --file backend/schema.sql --config backend/wrangler.jsonc
+```
+
+Use your database name in the command if you changed it.
+
+## 4. Create the Worker
+
+Run:
+
+```sh
+npm run deploy
+```
+
+This command builds the code and creates the Worker in your Cloudflare account. You do not need to create a Hello World Worker or paste code into the dashboard first. If Wrangler asks which account to use or asks you to choose a workers.dev subdomain, follow its prompts.
+
+When deployment finishes, copy the Worker address it prints. It will look like:
+
+```text
+https://canvas-drawbox.YOUR-SUBDOMAIN.workers.dev
+```
+
+This first deployment creates the service so you can finish its settings. The example origins are deliberately unconfigured at this point, so it is not ready for visitors yet.
+
+You can now find the Worker under **Workers & Pages** in the dashboard. Open it and check **Settings → Bindings**. It should show a **D1 database** with the binding name **DB** and your database selected. Wrangler adds this from the config file.
+
+## 5. Connect your website
+
+Open `config.json` and replace both example addresses:
 
 ```json
 {
@@ -40,58 +88,65 @@ Open `config.json`. Replace the example addresses with your own:
 }
 ```
 
-**allowedOrigins** is your website’s address, without a trailing slash or page path. For example, use `https://your-name.neocities.org`, not a link to an individual page. Add another address only if you use it too.
+For **allowedOrigins**, use your website address without a trailing slash or page path. For example, use `https://your-name.neocities.org`, not a link to a post. Add another address only if you use that website too.
 
-**workerOrigin** is the address of your DrawBoxCFL Worker. The Worker name in `backend/wrangler.jsonc` starts as `canvas-drawbox`. Its workers.dev subdomain belongs to your Cloudflare account; you can find it in **Workers & Pages**.
+For **workerOrigin**, paste the actual Worker address from the deployment, also without a trailing slash.
 
-If you do not know the Worker address yet, leave its example address for the first deployment. Wrangler will print the real address. Put that address in `config.json`, then run `npm run deploy` again before embedding the box.
+## 6. Add your private inbox key
 
-## 4. Add the database tables and private key
-
-Back in your terminal, run:
+Generate a long random password in your password manager. Save it, then run:
 
 ```sh
-npx wrangler d1 execute canvas-drawings --remote --file backend/schema.sql --config backend/wrangler.jsonc
 npx wrangler secret put INBOX_TOKEN --config backend/wrangler.jsonc
 ```
 
-The first command creates the tables in your new database. The second asks for a private inbox key. Generate a long random password in your password manager, paste it into the prompt, and keep a copy. You’ll use the same key to open your private inbox later.
+Paste that password into Wrangler’s private prompt. This key protects the private inbox and is also needed to accept drawings. Keep it out of your website and public source files.
 
-You can also add secrets from the dashboard under **Workers & Pages → your Worker → Settings → Runtime variables and secrets → Add variable**. This is what that form looks like:
+You can add it from the dashboard instead, under **Workers & Pages → your Worker → Settings → Runtime variables and secrets → Add variable**:
 
 ![Enter a secret name and turn on Secret](images/cloudflare-secret.jpg)
 
-Use **INBOX_TOKEN** as the name for the inbox key. For the optional email key, use **RESEND_API_KEY**. The image uses `YOUR_SECRET_NAME` as a placeholder; do not use that name in your real setup. Paste the value privately, turn on **Secret**, and save it. The terminal command above is the simpler option.
+Use **INBOX_TOKEN** as the name and turn on **Secret**. The image uses `YOUR_SECRET_NAME` only to show where the name goes. Paste the value privately and save it. For optional email, the separate secret is named **RESEND_API_KEY**.
 
-Do not put either key in `config.json`, your website, or a public repository.
-
-## 5. Deploy DrawBoxCFL
+Finish by deploying your website settings:
 
 ```sh
 npm run deploy
 ```
 
-This builds the widget and uploads the Worker. Wrangler prints its address when done. If you left the example Worker address in step 3, replace it now and deploy again.
+## 7. Check the Worker settings
 
-Open your Worker in **Workers & Pages → Settings**. Under **Bindings**, you should see a D1 database named **DB**. The project config adds this binding for you. Keep the five-minute scheduled trigger too; it handles cleanup and email retries.
+Open your Worker’s **Settings** in Cloudflare:
 
-## 6. Put the box on your website
+- **Bindings:** D1 should be connected as **DB**.
+- **Runtime variables and secrets:** **INBOX_TOKEN** should be stored as a secret. Its value should not be visible.
+- **Trigger events → Cron triggers:** keep `*/5 * * * *`. This runs cleanup and optional email retries every five minutes. The config adds it for you.
 
-The build creates a folder called `website-files/`:
+You can also open `https://YOUR-WORKER-ADDRESS/health`. A response containing `"ok":true` confirms the database check worked. It does not confirm that email is configured or delivered.
 
-1. Upload **drawbox-embed.mjs** from that folder to the root of your website, beside your main HTML file.
+The Worker’s main address is intentionally blank when opened on its own. That is expected; the drawing box appears inside your website.
+
+## 8. Add DrawBoxCFL to your website
+
+The build creates `website-files/`:
+
+1. Upload **drawbox-embed.mjs** from that folder to your website root, beside your main HTML file.
 2. Open **embed.html** in a text editor and copy its contents.
 3. Paste that block into your website’s HTML where you want the drawing box, then upload the edited page.
 
 Keep both the iframe and its script. The script gives the color picker and expanding message box enough room.
 
-Visit the page on your actual website and try a small drawing. Opening the Worker address by itself is intentionally blank. Once a drawing sends, you can [open the private inbox](INBOX.md), or [set up email](EMAIL.md).
+Visit the page on your actual website and send a small drawing. Confirm it appears in the [private inbox](INBOX.md). If you want drawings by email too, follow the [Resend guide](EMAIL.md).
 
-## If it does not show or send
+## If something does not work
 
-- **Blank on your website:** check that `allowedOrigins` matches the website address exactly. Also check whether your host allows the Worker iframe and script.
-- **Database error:** check the database ID, the **DB** binding, and that you ran the schema command.
-- **Clipped message box:** make sure you uploaded the sizing module and kept its script beside the iframe.
-- **Please wait before sending again:** that is the cooldown. The drawing stays there so you can send it later.
+- **Blank on your website:** check that `allowedOrigins` matches its address exactly. Your host must also allow the Worker iframe and the script.
+- **Database error:** check the database ID, the **DB** binding and that you ran the schema command.
+- **Service not configured:** make sure **INBOX_TOKEN** is saved on the correct Worker.
+- **Clipped message box:** upload the sizing module and keep its script with the iframe.
+- **Please wait before sending again:** that is the cooldown. Your drawing stays there so you can send it later.
+- **Works locally but not online:** after changing an address or source file, deploy again and upload the newly generated website module and embed block.
 
-More detail: [Cloudflare’s D1 setup guide](https://developers.cloudflare.com/d1/get-started/) and the project’s [API and limits](API.md).
+The file in `examples/preview.html` is a separate visual preview. It has no backend connection and cannot send drawings. Use the generated website embed for the real box.
+
+More detail: [Cloudflare’s D1 setup guide](https://developers.cloudflare.com/d1/get-started/), [Worker deployment guide](https://developers.cloudflare.com/workers/get-started/guide/) and the project’s [API and limits](API.md).

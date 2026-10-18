@@ -40,7 +40,7 @@ npx wrangler secret put RESEND_API_KEY --config backend/wrangler.jsonc
 npm run deploy
 ```
 
-Paste the Resend key into Wrangler’s private prompt. Do not add it to the JSON file. If you prefer the dashboard, use the [Cloudflare secret form](CLOUDFLARE.md#4-add-the-database-tables-and-private-key) with the name **RESEND_API_KEY** and **Secret** enabled.
+Paste the Resend key into Wrangler’s private prompt. Do not add it to the JSON file. If you prefer the dashboard, use the [Cloudflare secret form](CLOUDFLARE.md#6-add-your-private-inbox-key) with the name **RESEND_API_KEY** and **Secret** enabled.
 
 That connects the key and applies your email settings.
 
