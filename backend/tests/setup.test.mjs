@@ -19,6 +19,7 @@ const id = '12345678-1234-1234-1234-123456789abc';
 test('setup rejects unsafe or placeholder addresses and accepts HTTPS origins', () => {
   for (const value of ['http://site.test','https://site.test/post','https://site.test/?x=1','https://site.test/#x','https://user:pass@site.test','https://example.invalid']) assert.throws(() => httpsOrigin(value));
   assert.equal(httpsOrigin('https://SITE.test/'), 'https://site.test');
+  assert.equal(httpsOrigin('https://your-art.neocities.org'), 'https://your-art.neocities.org');
   assert.deepEqual(websiteOrigins('https://site.test, https://other.test/, https://site.test'), ['https://site.test','https://other.test']);
 });
 
