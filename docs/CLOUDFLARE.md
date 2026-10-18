@@ -75,7 +75,15 @@ https://canvas-drawbox.YOUR-SUBDOMAIN.workers.dev
 
 This first deployment creates the service so you can finish its settings. The example origins are deliberately unconfigured at this point, so it is not ready for visitors yet.
 
-You can now find the Worker under **Workers & Pages** in the dashboard. Open it and check **Settings → Bindings**. It should show a **D1 database** with the binding name **DB** and your database selected. Wrangler adds this from the config file.
+You can now find the Worker under **Workers & Pages** in the dashboard. Open it, then choose **Settings** in the top row:
+
+![Open the Settings tab on your Worker](images/cloudflare-worker-settings.jpg)
+
+Scroll to **Bindings**. It should show a **D1 database** with the binding name **DB** and your database selected. Wrangler adds this from the config file.
+
+![Check that D1 is connected with the binding name DB](images/cloudflare-binding.jpg)
+
+The database name is hidden in this screenshot. Yours should match the database you created in step 2.
 
 ## 5. Connect your website
 
@@ -108,6 +116,10 @@ You can add it from the dashboard instead, under **Workers & Pages → your Work
 
 Use **INBOX_TOKEN** as the name and turn on **Secret**. The image uses `YOUR_SECRET_NAME` only to show where the name goes. Paste the value privately and save it. For optional email, the separate secret is named **RESEND_API_KEY**.
 
+After saving, the list should show **Secret** and **Value encrypted**. You only need **INBOX_TOKEN** for the inbox. **RESEND_API_KEY** appears here too if you set up optional email.
+
+![Saved secrets appear with encrypted values](images/cloudflare-secrets-list.jpg)
+
 Finish by deploying your website settings:
 
 ```sh
@@ -121,6 +133,10 @@ Open your Worker’s **Settings** in Cloudflare:
 - **Bindings:** D1 should be connected as **DB**.
 - **Runtime variables and secrets:** **INBOX_TOKEN** should be stored as a secret. Its value should not be visible.
 - **Trigger events → Cron triggers:** keep `*/5 * * * *`. This runs cleanup and optional email retries every five minutes. The config adds it for you.
+
+Scroll to **Trigger events** to check the schedule. **Runs** should say **Every 5 minutes**, as shown below. The next run time will be different on your screen. You do not need to add another trigger if this one is already there.
+
+![Cron triggers shows that cleanup runs every five minutes](images/cloudflare-cron.jpg)
 
 You can also open `https://YOUR-WORKER-ADDRESS/health`. A response containing `"ok":true` confirms the database check worked. It does not confirm that email is configured or delivered.
 
