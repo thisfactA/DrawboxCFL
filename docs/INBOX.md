@@ -2,7 +2,7 @@
 
 You can view received drawings in your browser and save them as PNG files. You’ll need Python 3 and the INBOX_TOKEN you saved during Cloudflare setup.
 
-Run this from the project folder. It asks for the key without showing it and saves it outside the project:
+The viewer reads your Worker address from `config.json`. Run this from the project folder. It asks for the key without showing it and saves it outside the project:
 
 ```sh
 python3 - <<'PY'

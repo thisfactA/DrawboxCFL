@@ -18,14 +18,46 @@ Use `npm run setup` to configure the website and database without editing JSON b
 
 Run `npm test`. It builds the widget first, then checks drawing, sending, email retries, request limits, resizing and Trash cleanup using sample data. The tests do not send real email or change a live database.
 
-Edit `drawbox.html`, `drawbox.css` and `drawbox.js`. The files assembled in backend/ are generated, so change the source and rebuild instead of editing those copies.
+Edit `drawbox.html`, `drawbox.css` and `drawbox.js`. `backend/widget.html` and `backend/deploy.js` are generated copies. Rebuild instead of editing them. The other backend modules are source files.
 
 ## Test submissions locally
 
-For a full local setup, start `npm run dev` in another terminal. Wrangler prints its local Worker address. Initialize its separate local database:
+Use a separate project copy for local development so your deployment settings stay intact. In that copy, edit `config.json`:
+
+```json
+{
+  "allowedOrigins": ["http://127.0.0.1:4327"],
+  "workerOrigin": "http://127.0.0.1:8787"
+}
+```
+
+HTTP is allowed only for localhost development. The normal setup command uses HTTPS addresses for public sites.
+
+Create an untracked `backend/.dev.vars` file with a test-only key:
+
+```text
+INBOX_TOKEN=local-development-only
+```
+
+Initialize the local database, then start the Worker:
 
 ```sh
 npx wrangler d1 execute canvas-drawings --local --file backend/schema.sql --config backend/wrangler.jsonc
+npm run dev -- --port 8787
 ```
 
-Put a development INBOX_TOKEN in an untracked `backend/.dev.vars` file. Add your local website address to config.json, rebuild, then point the preview iframe at the local Worker and use the sizing module configured for that same address. Keep local test settings separate from your deployed settings and restore the production addresses before deploying.
+In a second terminal, serve the generated website files:
+
+```sh
+python3 -m http.server 4327 --bind 127.0.0.1 --directory website-files
+```
+
+Open http://127.0.0.1:4327/example.html. Unlike the standalone preview, this page connects to the local Worker and can send drawings. Start the inbox in a third terminal, using the inbox guide with your test key and this local copy. The viewer reads the Worker address from `config.json`.
+
+Local scheduled jobs do not run automatically. To test cleanup, run:
+
+```sh
+curl http://127.0.0.1:8787/cdn-cgi/local/scheduled
+```
+
+Stop the servers with Ctrl+C. Do not deploy this copy with local addresses or the test key.

@@ -1,6 +1,6 @@
 # Third-party dependencies
 
-Source uses MIT licensing; installed dependencies retain their own licenses. Install from the lockfile to receive their full license files. No dependency installation or node_modules is shipped in this independent ZIP. esbuild produces the Worker bundle from local project modules.
+DrawBoxCFL is MIT licensed. Its dependencies keep their own licenses. Install with `npm ci` to get the versions in `package-lock.json` and their license files. Generated Worker bundles include the license comments provided by the bundler.
 
 - `@cloudflare/kv-asset-handler` 0.5.0: MIT OR Apache-2.0
 - `@cloudflare/unenv-preset` 2.16.2: MIT OR Apache-2.0
@@ -84,6 +84,7 @@ Source uses MIT licensing; installed dependencies retain their own licenses. Ins
 - `esbuild` 0.28.2: MIT
 - `fsevents` 2.3.3: MIT
 - `happy-dom` 20.14.6: MIT
+- `jsonc-parser` 3.3.1: MIT
 - `kleur` 4.1.5: MIT
 - `miniflare` 5.20261012.1-beta: MIT
 - `path-to-regexp` 6.3.0: MIT
@@ -101,5 +102,3 @@ Source uses MIT licensing; installed dependencies retain their own licenses. Ins
 - `ws` 8.21.0: MIT
 - `youch` 4.1.0-beta.10: MIT
 - `youch-core` 0.3.3: MIT
-
-- `jsonc-parser` 3.3.1: MIT
