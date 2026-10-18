@@ -101,3 +101,5 @@ Source uses MIT licensing; installed dependencies retain their own licenses. Ins
 - `ws` 8.21.0: MIT
 - `youch` 4.1.0-beta.10: MIT
 - `youch-core` 0.3.3: MIT
+
+- `jsonc-parser` 3.3.1: MIT

@@ -14,6 +14,8 @@ Open http://127.0.0.1:4327/examples/preview.html. Stop the server with Ctrl+C.
 
 ## Check your changes
 
+Use `npm run setup` to configure the website and database without editing JSON by hand. It preserves comments and unrelated settings, and keeps previous copies in `.setup-backups/`. It does not contact Cloudflare or store inbox or email secrets.
+
 Run `npm test`. It builds the widget first, then checks drawing, sending, email retries, request limits, resizing and Trash cleanup using sample data. The tests do not send real email or change a live database.
 
 Edit `drawbox.html`, `drawbox.css` and `drawbox.js`. The files assembled in backend/ are generated, so change the source and rebuild instead of editing those copies.
