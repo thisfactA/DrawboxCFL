@@ -11,7 +11,14 @@ import os
 ROOT = Path(__file__).resolve().parent
 KEY = Path(os.environ.get('DRAWBOX_INBOX_KEY_FILE', str(Path.home() / '.config/drawbox/inbox-key')))
 ORIGIN = 'http://127.0.0.1:4319'
-REMOTE = os.environ.get('DRAWBOX_INBOX_URL', 'https://drawbox.example.invalid/api/inbox')
+def inbox_url():
+    override = os.environ.get('DRAWBOX_INBOX_URL')
+    if override:
+        return override
+    config = json.loads((ROOT.parent / 'config.json').read_text())
+    return config['workerOrigin'] + '/api/inbox'
+
+REMOTE = inbox_url()
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
