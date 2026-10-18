@@ -12,3 +12,5 @@ backend/settings.mjs
 backend/deploy.js
 backend/config.json
 website-files/
+
+.setup-backups/

@@ -18,33 +18,20 @@ You’ll need Node.js 22.13+, a Cloudflare account, and access to edit your webs
 
 For a walkthrough with screenshots, see [Cloudflare setup](docs/CLOUDFLARE.md).
 
-1. Install dependencies and create a database:
+Start with:
 
-   ```sh
-   npm ci
-   npx wrangler login
-   npx wrangler d1 create canvas-drawings
-   ```
+```sh
+npm ci
+npx wrangler login
+npx wrangler d1 create canvas-drawings
+npm run setup
+```
 
-2. Edit two files:
+Setup asks for your website address and the Database ID, then fills in the config files. Leave the Worker address blank if you haven’t deployed yet. It saves copies of the previous settings in `.setup-backups/` and never asks for secret keys.
 
-   - `config.json`: set `allowedOrigins` to your exact website origin, such as `https://your-site.example`. Set `workerOrigin` to your planned Worker address. Use no trailing slashes or page paths.
-   - `backend/wrangler.jsonc`: choose your Worker name and replace the D1 database ID. Keep the `DB` binding. Use the database name you created above.
+Continue with [step 4 of the Cloudflare guide](docs/CLOUDFLARE.md#4-create-the-worker) to deploy, save your Worker address, add an inbox key, and upload the website embed. Each step includes a short check so you know it worked. You don’t need to edit the backend code.
 
-3. Initialize D1, create the Worker, then add its private inbox key:
-
-   ```sh
-   npx wrangler d1 execute canvas-drawings --remote --file backend/schema.sql --config backend/wrangler.jsonc
-   npm run deploy
-   npx wrangler secret put INBOX_TOKEN --config backend/wrangler.jsonc
-   npm run deploy
-   ```
-
-   The first deployment creates the Worker. If you did not know its address when editing `config.json`, copy the address Wrangler prints into `workerOrigin` before the final deployment. Create a long random INBOX_TOKEN in a password manager and save it privately. Never put it in your public website. Adjust the database name in the command if you renamed it.
-
-4. Upload `website-files/drawbox-embed.mjs` to your website root. Copy the contents of `website-files/embed.html` into your page where you want the drawing box.
-
-The build creates the `website-files/` folder. Keep the sizing script with the iframe so the message box and color picker have room to open. The Worker address is intentionally blank when visited on its own, so test DrawBoxCFL on your website. Your host must allow the Worker iframe and the script.
+Get your first drawing into the inbox before adding optional email delivery.
 
 ## Try the example
 
