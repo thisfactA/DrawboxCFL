@@ -1,8 +1,8 @@
-# DrawboxCFL
+# DrawBoxCFL
 
-A simple drawing box for your website. Visitors can leave a drawing and a little message, and you can receive both privately through Cloudflare (or by email if you want).
+A drawing box for your website. Visitors can leave a drawing and a little message, and you can receive both privately through Cloudflare (or by email if you want).
 
-This version uses Cloudflare Workers and D1 instead of Google Forms, Sheets and Imgur. It includes a pen, eraser, fill tool, undo/redo and a custom color picker. No desktop app needed.
+This is based on vv0ltz’s Drawbox, with Cloudflare Workers and D1 handling the storage. It has a pen, eraser, fill tool, undo/redo and a custom color picker. No desktop app needed.
 
 ![Drawbox with a sample drawing and optional message](docs/images/drawbox-desktop.jpg)
 
