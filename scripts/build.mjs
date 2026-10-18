@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {buildPreview} from './examples/build-preview.mjs';
-const root=import.meta.dirname,backend=path.join(root,'backend');
+import {buildPreview} from '../examples/build-preview.mjs';
+const root=path.resolve(import.meta.dirname,'..'),backend=path.join(root,'backend');
 const read=name=>fs.readFile(path.join(root,name),'utf8');
 const [template,css,js]=await Promise.all(['drawbox.html','drawbox.css','drawbox.js'].map(read));
 if(!template.includes('<link rel="stylesheet" href="drawbox.css">')||!template.includes('<script src="drawbox.js"></script>'))throw Error('Keep the stylesheet and script markers in drawbox.html');
