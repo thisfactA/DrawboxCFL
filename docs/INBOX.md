@@ -1,6 +1,8 @@
 # Private browser inbox
 
-Python 3 is needed only for this optional viewer. Save the same INBOX_TOKEN used by the Worker outside the repository:
+You can view received drawings in your browser and save them as PNG files. You’ll need Python 3 and the INBOX_TOKEN you saved during Cloudflare setup.
+
+Run this from the project folder. It asks for the key without showing it and saves it outside the project:
 
 ```sh
 python3 - <<'PY'
@@ -14,6 +16,8 @@ PY
 python3 backend/viewer.py
 ```
 
-Open http://127.0.0.1:4319/. The Python proxy keeps the key out of browser JavaScript. Keep the loopback binding and Host/Origin checks. DRAWBOX_INBOX_KEY_FILE can override the key location; DRAWBOX_INBOX_URL can override the trusted HTTPS endpoint.
+Open http://127.0.0.1:4319/. Leave the terminal running while you use the inbox; press Ctrl+C when finished. Python connects to the Worker for you, so your browser does not receive the secret key.
 
-The browser viewer reads drawings/messages and saves PNG files. Management actions use the authenticated backend API. See API.md. Do not publish the viewer key, database backup or received content.
+If you need a different key file or Worker, set `DRAWBOX_INBOX_KEY_FILE` or `DRAWBOX_INBOX_URL` before starting the viewer. Keep the server restricted to your own computer.
+
+This viewer does not include Trash or Restore buttons. Those actions are available through the [private API](API.md). Keep the key, received drawings and database backups private.

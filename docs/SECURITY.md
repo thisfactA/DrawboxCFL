@@ -1,11 +1,21 @@
-# Security
+# Keep your inbox private
 
-INBOX_TOKEN grants private inbox reads and management, including deletion of Trash. Keep it server-side and in an owner-only local file. RESEND_API_KEY is separate and sending-only. Never expose either in widget JavaScript, public files or an iframe query string. Use the localhost proxy rather than weakening private CORS.
+Treat `INBOX_TOKEN` like a password. Anyone with it can read your drawings, move them to Trash, restore them, or permanently delete items already in Trash. Save it through Wrangler’s secret prompt and in the private key file used by your local viewer. Never put it in your website, a public repository, or an iframe URL.
 
-Inputs are bounded and validated; SQL parameters prevent query injection; messages are rendered as text/escaped HTML. The server rasterizer rejects excessive drawing work. Private auth compares fixed-size SHA-256 digests. Public submission uses Cloudflare's IP to derive a keyed daily visitor identifier. It is pseudonymous, not truly anonymous; token rotation changes that identifier.
+`RESEND_API_KEY` is a separate key for sending email. Keep that in Worker secrets too. The receiving address belongs in `MAIL_TO`, which you control. Visitors cannot choose where email goes.
 
-Frame CSP and Origin checks reduce browser misuse but are not authentication against arbitrary HTTP clients. No public drawing gallery exists. No code reaches into the owner's laptop through the Worker. The local viewer initiates authenticated outbound retrieval.
+## What the checks do
 
-The local proxy binds 127.0.0.1 only and checks Host/Origin. No opaque null-origin inbox grant is present. File-origin framing exists for local file previews and does not grant inbox authentication.
+The Worker checks drawing sizes, coordinates, colors and message length before saving anything. It also limits how much work a drawing can take to render. Database queries use parameters, and visitor messages are displayed as text or escaped before going into email.
 
-Automatic cleanup permanently deletes expired Trash, and manual delete requires actual Trash status. The browser proxy is read-only; management actions require a trusted authenticated API client. Email/saved-image copies are independent. Review your provider's current quotas before public deployment. Source is provided as-is, without a security guarantee.
+Your website address controls where the widget can be embedded and which browser submissions are accepted. This helps prevent misuse, but it cannot stop someone from making requests outside a browser. Request limits still matter.
+
+Visitor IP addresses are used to make a private daily identifier for cooldowns. Raw IP addresses are not stored in the drawing rows. These identifiers are pseudonymous, not fully anonymous. Changing INBOX_TOKEN changes the identifiers too.
+
+## Local inbox and deleted drawings
+
+The local viewer connects out to your Worker. It listens only on `127.0.0.1` and keeps the secret out of browser JavaScript. Keep those restrictions rather than exposing the viewer to your network or allowing arbitrary browser origins.
+
+Trash is recoverable for seven days. After cleanup or permanent deletion, the drawing is removed from D1 and its related private tables. That does not remove an email or PNG you have already saved. Database space can be reused without the database file immediately shrinking.
+
+No CAPTCHA is included. Distributed spam can still use up the shared quotas. Monitor your account usage before increasing limits. These protections reduce risk; they are not a guarantee against every attack.

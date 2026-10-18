@@ -1,30 +1,69 @@
-# API and data model
+# Backend API
 
-All JSON responses are no-store. No public drawing-list endpoint exists. `/health` checks/migrates storage; the legacy moderation label is informational and does not enable a visitor gallery.
+This page is for changing the backend or building your own inbox client. For normal setup, start with [Cloudflare](CLOUDFLARE.md) and [email](EMAIL.md).
 
-## Public submission
+All JSON responses tell browsers not to cache them. There is no public endpoint for listing received drawings. `/health` checks the database connection and initializes any missing support tables.
 
-`POST /api/drawings`, Content-Type application/json, allowed Origin required. Body: `{strokes:[...],message:"",website:""}`. `website` is a honeypot and must be empty. Optional legacy `name` is trimmed to40 characters. A stroke contains color `#rrggbb`, size1-40, and normalized `[x,y]` points in0-1. Omit tool for brush/erase; erasing is a white brush. Set `tool:"fill"` for a single-point fill. The widget slider offers1-30.
+## Send a drawing
 
-Limits:220,000 request bytes,300 strokes,2,000 points per stroke,20,000 total points and8,000,000 estimated raster-work units. Message is optional plain text, up to1,000 UTF-16 code units, with disallowed control characters rejected. Coordinates are rounded to four decimals. Request rejection does not erase the local draft.
+Send `POST /api/drawings` with `Content-Type: application/json` and an allowed website Origin. The body has these fields:
 
-Success201 `{id,status:"pending"}` means saved in D1. Error400 invalid input,403 origin/IP verification failure,415 content type,429 cooldown/quota,409 capacity full,503 service/configuration failure. Public responses do not expose visitor identifiers. Cloudflare Connecting-IP must be present; local Worker testing may need a test header in an isolated development environment.
+- `strokes`: the drawing operations.
+- `message`: optional plain text, up to 1,000 UTF-16 code units.
+- `website`: leave empty. It is a hidden spam-trap field.
+- `name`: an optional legacy field, trimmed to 40 characters.
 
-Admission: at least60 seconds between submissions per daily visitor identity, five per rolling hour,500 globally per rolling day. Current/yesterday HMAC identities are checked across midnight. Capacity includes Trash:5,000 drawings and200,000,000 serialized-stroke bytes. Messages/indexes/metadata are additional database storage.
+Each stroke has a `color` such as `#345579`, a `size` from 1 to 40, and a list of `[x,y]` points. Coordinates run from 0 to 1 and are rounded to four decimal places. A brush or eraser stroke has no `tool` field; the eraser draws in white. A fill operation uses `tool: "fill"` and exactly one point. The public widget's size slider offers 1 to 30.
 
-## Private inbox
+The Worker limits each request to 220,000 bytes, 300 strokes, 2,000 points per stroke and 20,000 points in total. It also rejects drawings that exceed 8,000,000 estimated rendering-work units. Invalid control characters are rejected from messages. A rejected request leaves the visitor's local draft intact.
 
-`GET /api/inbox` with `Authorization: Bearer <INBOX_TOKEN>` returns up to20 drawings plus next cursor. Follow next.before and next.id together for older pages. Each row includes id, created_at milliseconds, name, serialized strokes JSON, approved legacy status, message, and optional trashed_at milliseconds. Visitor hashes are excluded. approved0 is active inbox, -1 is Trash, and1 is a legacy approval value; no visitor gallery is supplied.
+### Responses
 
-`POST /api/inbox` with the same authentication and JSON `{id,action}` supports trash, restore, delete. delete executes only if approved<0; absent or restored items return409. Custom management clients should confirm irreversible deletion. Unauthenticated requests return401; missing service secrets/config can return503.
+| Status | Meaning |
+| --- | --- |
+| 201 | Saved in D1. The response contains `id` and `status: "pending"`. |
+| 400 | Drawing or message is invalid. |
+| 403 | Website origin or IP verification failed. |
+| 415 | Request is not JSON. |
+| 429 | Cooldown or submission limit reached. |
+| 409 | Inbox storage is full. |
+| 503 | Service or required configuration is unavailable. |
 
-## Tables
+Public responses do not include visitor identifiers. Cloudflare's connecting-IP header is required. Tests can supply a test header in an isolated local environment; do not let visitors choose their own IP identity in production.
 
-- drawings: primary row, creation timestamp, name, stroke JSON, approved status, HMAC visitor identifier.
-- drawing_capacity: one-row record/serialized-stroke ledger maintained by insert/delete/update triggers.
-- drawing_messages: one optional message per drawing.
-- drawing_trash: time of entry into Trash, with indexed expiry lookup and transition/cleanup triggers.
-- drawing_mail: delivery state, attempt count, first/next attempt, lease, provider ID, concise error.
-- drawing_mail_attempts: daily attempt slots retained32 days, independent of drawing deletion.
+### Submission and storage limits
 
-Use schema.sql for fresh databases. Worker ensureStorage performs additive idempotent initialization in a D1 transaction. It does not reset a database or discard existing drawings to admit another. Back up your own database before migrations.
+A visitor must wait at least 60 seconds between submissions and can send five drawings per rolling hour. There is also a shared limit of 500 submissions per rolling day. Yesterday's daily visitor identifier is checked around midnight so the cooldown cannot be skipped by crossing into a new day.
+
+Capacity is 5,000 drawings or 200,000,000 bytes of serialized stroke data, whichever is reached first. Trash counts toward both. Messages, indexes and other database records use additional storage beyond that stroke-data limit.
+
+## Read the private inbox
+
+Send `GET /api/inbox` with this header:
+
+```text
+Authorization: Bearer <INBOX_TOKEN>
+```
+
+The response contains up to 20 drawings and a cursor for the next page. Use both `next.before` and `next.id` when requesting older pages.
+
+Rows include `id`, `created_at`, `name`, serialized `strokes`, `approved`, `message` and, for Trash, `trashed_at`. Timestamps are in milliseconds. Visitor identifiers are excluded. The legacy `approved` field uses `0` for the active inbox, `-1` for Trash and `1` for an older approval state. It does not enable a public gallery.
+
+## Move, restore or delete a drawing
+
+Send `POST /api/inbox` with the same private header and a JSON body containing `id` and `action`. Supported actions are `trash`, `restore` and `delete`.
+
+Permanent deletion only works while the drawing is still in Trash. A missing or restored item returns 409. A custom management interface should ask for confirmation before permanent deletion. Requests without valid authentication return 401; missing service configuration can return 503.
+
+## Database tables
+
+| Table | What it stores |
+| --- | --- |
+| `drawings` | Drawing data, creation time, legacy status and private visitor identifier. |
+| `drawing_capacity` | Record and stroke-byte totals, kept in sync by database triggers. |
+| `drawing_messages` | One optional message per drawing. |
+| `drawing_trash` | When a drawing entered Trash, used for seven-day expiry. |
+| `drawing_mail` | Delivery state, attempts, retry timing and provider response. |
+| `drawing_mail_attempts` | Daily email-attempt records, retained for 32 days even if a drawing is deleted. |
+
+Use `backend/schema.sql` for a new database. The Worker's `ensureStorage` function adds missing support tables inside a D1 transaction. It does not reset an existing database or discard old drawings to make room. Back up your database before changing its schema.
